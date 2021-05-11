@@ -41,7 +41,7 @@
                   <span class="icon-bar"></span>                        
                 </button>
                 <a class="navbar-brand" href="#"><i class="glyphicon glyphicon-cloud" style="color: #71a3ce;"></i>  
-                    Safe<b style="color: #71a3ce;">@myCloud</b></a>
+                    Safe<b style="color: #71a3ce;">@myCloud Test</b></a>
               </div>
               <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav">
