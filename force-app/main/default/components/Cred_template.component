@@ -1,0 +1,215 @@
+<apex:component >
+    <script type="text/html" id="cred-table">
+        <table id="credTable" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                                      <th>Title</th>
+                            <th>URL</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Mobile</th>
+                            <th>Email</th>
+                            <th>View/Edit/Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody> 
+                         {{#Credential_Detail}}        
+                            <tr data-item="{{Id}}">
+                                <td>{{Category.Text}}</td>
+                                <td>{{Title}}</td>
+                                <td class="text-center" style="cursor: pointer;"><a href="{{Redirect_URL}}" target="_blank"><span class="glyphicon glyphicon-link" data-toggle="tooltip" data-placement="top" title="Click to open" ></span></a></td>
+                                <td class="copy" style="cursor: pointer;" data-toggle="tooltip" data-placement="top" title="Double click to copy"><span class="data-to-copy">{{Username}}</span></td>
+                                <td class="copy" style="cursor: pointer;" data-toggle="tooltip" data-placement="top" title="Double click to copy"><span class="hide data-to-copy">{{Password}}</span><span>********</span></td>
+                                <td class="copy" style="cursor: pointer;" data-toggle="tooltip" data-placement="top" title="Double click to copy"><span class="data-to-copy">{{Mobile}}</span></td>
+                                <td class="copy" style="cursor: pointer;" data-toggle="tooltip" data-placement="top" title="Double click to copy"><span class="data-to-copy">{{Email}}</span></td>
+                                <td class="text-center">
+                                    <a href="javascript:openModel('View','{{Id}}')"  style="padding: 0 5px 0 5px;"><span class="glyphicon glyphicon glyphicon-list-alt" data-toggle="tooltip" data-placement="top" title="View"></span></a>
+                                    <a href="javascript:openModel('Edit','{{Id}}')"  style="padding: 0 5px 0 5px;"><span class="glyphicon glyphicon-edit" data-toggle="tooltip" data-placement="top" title="Edit"></span></a>
+                                    <a href="javascript:openModel('Delete','{{Id}}')"  style="padding: 0 5px 0 5px;"><span class="glyphicon glyphicon glyphicon-trash" data-toggle="tooltip" data-placement="top" title="Delete"></span></a>
+                                </td>
+                            </tr>
+                          {{/Credential_Detail}}   
+                    </tbody>
+         </table>
+    </script>
+    
+    <script type="text/html" id="cred-addedit-modal">
+             <form id="Cred-Form" data-toggle="validator" role="form" data-item="{{Head}}">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                  
+                    <!-- Modal Header -->
+                    <div class="modal-header text-center">
+                      <h4 class="modal-title">{{Head}} Credentials</h4>
+                      <!--<button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                    </div>
+                    
+                    <!-- Modal body -->
+                    <div class="modal-body parent" id="cDetailBody">{{#data}}
+                        <input type="hidden" id="Id" name="cdId" value="{{Id}}"/>
+                          <div class="row">
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group has-feedback">
+                                      <label for="Category">Category:</label>
+                                      <div class="input-group">
+                                        <select class="form-control" id="Category" {{disabled}}>
+                                            {{#CategoryList}}
+                                              <option value="{{recId}}">{{Text}}</option>
+                                             {{/CategoryList}}
+                                        </select>
+                                        <div class="input-group-btn">
+                                            <button id="cred-category" class="btn btn-info" type="button" ><span class="glyphicon glyphicon-plus"></span> 
+                                            </button> 
+                                        </div>
+                                      </div>
+                                      <!--<div class="btn-group" style="display: none;">
+                                          <input id="CategoryText123" type="text" class="form-control"/>
+                                          <span id="searchclear" class="glyphicon glyphicon-remove-circle"></span>
+                                      </div>-->
+                                      <input type="text" class="form-control" id="CategoryText" placeholder="Category" {{disabled}} style="display: none;" />
+
+                                    </div>
+                              </div>
+                              
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group has-feedback">
+                                      <label for="Title">Title:</label>
+                                      <input type="text" class="form-control" id="Title" value="{{Title}}" placeholder="Gmail/Salesforce/Facebook.." {{disabled}} required/>
+                                      <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                                      <span class="help-block with-errors"></span>
+                                    </div>
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group has-feedback">
+                                      <label for="Redirect_URL">Redirect URL:</label>
+                                          <input type="url" class="form-control" id="Redirect_URL" value="{{Redirect_URL}}" placeholder="Web-Site : https://www.example.com" {{disabled}} required/>
+                                      <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                                      <span class="help-block with-errors"></span>
+                                      <!--<input list="Title-dl" class="form-control" id="Redirect_URL" value="{{Redirect_URL}}" placeholder="Web-Site" autocomplete="off" {{disabled}} required/>
+                                        <datalist id="Title-dl">
+                                          {{#URL_DataList}}
+                                          <option value="{{.}}">{{.}}</option>
+                                           {{/URL_DataList}}  
+                                        </datalist> -->
+                                  </div>
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group has-feedback">
+                                      <label for="Username">Username:</label>
+                                      <input type="text" class="form-control" id="Username" value="{{Username}}" placeholder="Username" {{disabled}} required/>
+                                      <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                                      <span class="help-block with-errors"></span>
+                                    </div>
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                <div class="form-group has-feedback">
+                                  <label for="Password">Password:</label>
+                                  <div class="input-group">
+                                    <input type="text" class="form-control pass-result" id="Password"  autocomplete="off" value="{{Password}}" placeholder="Password --> Ganerate Password >>" autocomplete="off" {{disabled}} required/>
+                                    <div class="input-group-btn">
+                                        <button id="g-pass" class="btn btn-info" type="button" ><span class="glyphicon glyphicon-transfer"></span> 
+                                        </button> 
+                                    </div>
+                                  </div>
+                                  <span class="help-block with-errors"></span>
+                                </div>
+                                <!--    <div class="form-group">
+                                      <label for="Password">Password:</label>
+                                        <input type="text" class="form-control" id="Password" value="{{Password}}" {{disabled}}/>
+                                  </div>-->
+
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group has-feedback">
+                                      <label for="Email">Email:</label>
+                                        <input type="email" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" class="form-control" id="Email" value="{{Email}}" {{disabled}} placeholder="Email" data-error="Bruh, that email address is invalid" required/>
+                                        <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                                        <span class="help-block with-errors"></span>
+                                    </div>
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                      <label for="Mobile">Mobile:</label>
+                                        <input type="Phone" class="form-control" id="Mobile" value="{{Mobile}}" placeholder="Mobile" {{disabled}}/>
+                                    </div>
+                              </div>
+                              <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                      <label for="Security_question">Security_question:</label>
+                                        <input type="text" class="form-control" id="Security_question" value="{{Security_question}}" placeholder="Security Question" {{disabled}}/>
+                                    </div>
+                              </div>
+                               <div class="col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                      <label for="Security_answer">Security_answer:</label>
+                                        <input type="text" class="form-control" id="Security_answer" value="{{Security_answer}}"  placeholder="Security Answer" {{disabled}}/>
+                                    </div>
+                              </div>
+                               <div class="col-sm-12 col-md-6 col-lg-6">
+                                  <div class="form-group">
+                                      <label for="Comments">Comments:</label>
+                                      <textarea class="form-control" rows="3" id="Comments" value="{{Comments}}" placeholder="Comments" {{disabled}}>{{Comments}}</textarea>
+                                  </div>
+                              </div>
+                             
+                             
+                          </div>
+                    </div>
+                    
+                    <!-- Modal footer -->
+                    <div class="modal-footer text-center">
+                        {{#isDelete}} 
+                          <button type="submit" class="btn btn-success">{{Head}}</button>
+                        {{/isDelete}}
+                        {{^isDelete}} 
+                          <button type="submit" class="btn btn-success" {{disabled}}>{{Head}}</button>
+                        {{/isDelete}}
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
+                    </div>
+                    {{/data}}
+                  </div>
+                </div>
+              </form>     
+    </script>
+
+    <script type="text/html" id="password-template">
+          <div class="row gpass-parent">
+            <div class="col-sm-1 col-md-2 col-lg-2"></div>
+            <div class="col-sm-12 col-md-12 col-lg-12">
+                <div class="col-sm-6 col-md-6 col-lg-6"><span>Length</span></div>
+                <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input type="number" class="form-control input-sm" id="length" min='4' max='20' value='8' /></div>
+
+                <div class="col-sm-6 col-md-6 col-lg-6"><span>Uppercase</span></div>
+                <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="uppercase" type="checkbox" class="form-check-input" value=""/></div>
+                      
+                <div class="col-sm-6 col-md-6 col-lg-6"><span>Lowercase</span></div>
+                <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="lowercase" type="checkbox" class="form-check-input" value=""/></div>
+
+                <div class="col-sm-6 col-md-6 col-lg-6"><span>Numbers</span></div>
+                <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="numbers" type="checkbox" class="form-check-input" value=""/></div>
+
+                <div class="col-sm-6 col-md-6 col-lg-6"><span>Symbols</span></div>
+                <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="symbols" type="checkbox" class="form-check-input" value=""/></div>
+
+                <div class="col-sm-12 col-md-12 col-lg-12 text-center">
+                  <button type="button" class="btn btn-success" id="generate" onclick="generatePasswordClick(this)">Generate And Use</button>
+                </div>
+            </div>
+            <div class="col-sm-1 col-md-2 col-lg-2 text-center"></div>
+          </div>
+    </script>
+
+    <script type="text/html" id="category-template">
+                                  
+      <div class="row parent"> 
+        <div class="col-sm-12 col-md-12 col-lg-12"> 
+             <div class="input-group">
+                 <input type="text" class="form-control Category-Text" placeholder="Category" /> 
+                  <div class="input-group-btn">
+                      <button type="button" class="btn btn-success" id="Add-Category" onclick="addCategory(this);">Add</button> 
+                  </div>
+             </div>
+       </div>
+  </script>
+</apex:component>

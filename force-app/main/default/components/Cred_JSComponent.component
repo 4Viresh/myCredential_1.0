@@ -1,0 +1,360 @@
+<apex:component controller="Cred_MainController"> 
+    <script>
+        /*
+        var cred_Widget = function(){
+            this.credentialData =[];
+            this.getData();
+        }
+
+        var cred_Widget.prototype.getData = function() {
+            blockUI();
+            
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.Cred_MainController.getCredentialData}',function(result, event){
+                        if (event.status) {
+                            this.credentialData= result.data;
+                            renderTable(result.data);
+                        }else if (event.type === 'exception') {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");
+                        }else {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");
+                        }
+                    blockUI();    
+                },{escape: false}
+            );
+        };
+        */
+
+        function getdata(){
+            blockUI();
+            
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.Cred_MainController.getCredentialData}',function(result, event){
+                        if (event.status) {
+                            window.credentialData = result.data;
+                            if(window.credentialData.length == 0){
+                                window.credentialData['CategoryList'] = [];
+                                window.credentialData['Credential_DetailList'] = [];
+                            }
+                            renderTable(result.data);
+                        }else if (event.type === 'exception') {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");
+                        }else {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");
+                        }
+                    blockUI();    
+                },{escape: false}
+            );
+        }
+        
+        function renderTable(result){
+            var template = $("#cred-table").html();
+            var output = Mustache.render(template,{ Credential_Detail: result.Credential_DetailList }); 
+            $('#cred-data-table').html(output); 
+            
+            var templateModal = $("#cred-addedit-modal").html();
+            var outputModal = Mustache.render(templateModal,{ CategoryList: credentialData.CategoryList }); 
+            $('#addEditModal').html(outputModal); 
+            
+            var credTable = $('[id$="credTable"]').DataTable({
+                responsive: true,
+                scrollY: 400,
+                scrollX: true
+            });
+            
+            $("td.copy").bind('dblclick',function(){
+                
+                const text = $(this).find('span.data-to-copy').text();
+                if(!text){ 
+                    toastr["info"]("No text to select.", "Info")    
+                    return;
+                }
+                var $tempInput = document.createElement('INPUT');
+                this.appendChild($tempInput);
+                $tempInput.setAttribute('value', text);
+                $tempInput.select();
+                document.execCommand('copy');
+                this.removeChild($tempInput);
+                toastr["success"]("Text copied to clipboard", "Success");
+
+            });    
+
+           // $('[data-toggle="tooltip"]').tooltip();
+
+        }
+        
+        function blockUI(){
+            $(".overlay").toggleClass( "show","hide" );
+        }
+    
+        function openModel(modalName,recId){
+
+            switch(modalName) {
+              case 'Add':
+                 let templateAdd = $("#cred-addedit-modal").html();
+                 let outputAdd = Mustache.render(templateAdd,{ data: {}, Head: 'Create', CategoryList: window.credentialData.CategoryList,  disabled : '', isDelete : false });
+                 $('#addEditModal').empty();    
+                 $('#addEditModal').html(outputAdd); 
+                 $("#addEditModal").modal("show");     
+                break;
+              case 'Edit':
+                 let recordEdit = window.credentialData.Credential_DetailList.filter(d => d.Id === recId);
+                 let templateEdit = $("#cred-addedit-modal").html();
+                 let outputEdit = Mustache.render(templateEdit,{ data: recordEdit, Head: 'Update', CategoryList: window.credentialData.CategoryList, disabled : '', isDelete : false });
+                 $('#addEditModal').empty();    
+                 $('#addEditModal').html(outputEdit); 
+                 $("#addEditModal").modal("show"); 
+                break;
+              case 'View':
+                 let recordView = window.credentialData.Credential_DetailList.filter(d => d.Id === recId);
+                 let templateView = $("#cred-addedit-modal").html();
+                 let outputView = Mustache.render(templateView,{ data: recordView, Head: 'View', CategoryList: window.credentialData.CategoryList,  disabled : 'disabled', isDelete : false });
+                 $('#addEditModal').empty();    
+                 $('#addEditModal').html(outputView); 
+                 $("#addEditModal").modal("show"); 
+               break; 
+               case 'Delete':
+                 let recordDelete = window.credentialData.Credential_DetailList.filter(d => d.Id === recId);
+                 let templateDelete = $("#cred-addedit-modal").html();
+                 let outputDelete = Mustache.render(templateDelete,{ data: recordDelete, Head: 'Delete', CategoryList: window.credentialData.CategoryList,  disabled : 'disabled', isDelete : true });
+                 $('#addEditModal').empty();    
+                 $('#addEditModal').html(outputDelete); 
+                 $("#addEditModal").modal("show"); 
+               break; 
+            }
+            
+            $("#g-pass").popover({
+                title: '<h5 class="text-center">Ganerate Password</h5>',
+                container: '#cDetailBody',
+                placement: 'bottom',
+                html: true, 
+                content: '<div id="gen-password"> </div>'
+            });
+
+            $("#g-pass").bind('click',function(){
+                if($('#gen-password').find('#password-template').length == 0)
+                    $('#gen-password').html($('#password-template').html());
+            });
+
+            $("#cred-category").popover({
+                title: '<h5 class="text-center">New Category</h5>',
+                container: '#cDetailBody',
+                placement: 'bottom',
+                html: true, 
+                content: '<div id="Add-Category"> </div>'
+            });
+            
+            $("#cred-category").bind('click',function(){
+                if($('#Add-Category').find('#category-template').length == 0)
+                    $('#Add-Category').html($('#category-template').html());
+            });
+
+            $('#Cred-Form').validator().on('submit', function (e) {
+                event.preventDefault()
+                if (e.isDefaultPrevented()) {
+                    // handle the invalid form...
+                } else {
+                    // everything looks good!
+                    upsertDeleteRecord(this.dataset.item);
+                }
+            })
+
+        }
+        
+        function addCategory(ele){
+                    
+            $(ele).closest('#cDetailBody').find('#Category').append('<option value="">'+$(ele).closest('.input-group').find('.Category-Text').val()+'</option>'); 
+            $("#cred-category").popover('hide');
+        }
+        //Generate Password Start
+
+        const randomFunc = {
+                lower: getRandomLower,
+                upper: getRandomUpper,
+                number: getRandomNumber,
+                symbol: getRandomSymbol
+        }
+        function generatePasswordClick(generate_ele){
+                
+                let ele_parent = $(generate_ele).closest('.gpass-parent');
+                $(ele_parent).find(".pass-result").text('');
+                 const length = $(ele_parent).find("#length").val();
+                const hasLower = $(ele_parent).find("#lowercase").prop("checked");
+                const hasUpper = $(ele_parent).find("#uppercase").prop("checked");
+                const hasNumber = $(ele_parent).find("#numbers").prop("checked");
+                const hasSymbol = $(ele_parent).find("#symbols").prop("checked");
+                
+                var strPass = generatePassword(hasLower, hasUpper, hasNumber, hasSymbol, length);
+                if($(ele_parent).closest('#cDetailBody').length > 0){
+                    $(ele_parent).closest('#cDetailBody').find('.pass-result').val(strPass);   
+                    $("#g-pass").popover('hide'); 
+
+                }else{
+                    $(ele_parent).find(".pass-result").val(strPass);        
+                }
+
+        }
+
+        function copyToclipboard(ele){
+            const textarea = document.createElement('textarea');
+                const password =  $("#result").val();
+                
+                if(!password) { return; }
+
+                var $tempInput = document.createElement('INPUT');
+                ele.appendChild($tempInput);
+                $tempInput.setAttribute('value', password);
+                $tempInput.select();
+                document.execCommand('copy');
+                ele.removeChild($tempInput);
+                toastr["success"]("Password copied to clipboard", "Success");
+
+        }
+      
+        function generatePassword(lower, upper, number, symbol, length) {
+            let generatedPassword = '';
+            const typesCount = lower + upper + number + symbol;
+            const typesArr = [{lower}, {upper}, {number}, {symbol}].filter(item => Object.values(item)[0]);
+            
+            // Doesn't have a selected type
+            if(typesCount === 0) {
+                return '';
+            }
+            
+            // create a loop
+            for(let i=0; i<length; i+=typesCount) {
+                typesArr.forEach(type => {
+                    const funcName = Object.keys(type)[0];
+                    generatedPassword += randomFunc[funcName]();
+                });
+            }
+            
+            const finalPassword = generatedPassword.slice(0, length);
+            
+            return finalPassword;
+        }
+        
+        function getRandomLower() {
+            return String.fromCharCode(Math.floor(Math.random() * 26) + 97);
+        }
+        
+        function getRandomUpper() {
+            return String.fromCharCode(Math.floor(Math.random() * 26) + 65);
+        }
+        
+        function getRandomNumber() {
+            return +String.fromCharCode(Math.floor(Math.random() * 10) + 48);
+        }
+        
+        function getRandomSymbol() {
+            const symbols = '!@#$%^&*(){}[]=<>/,.'
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+        //Generate Password End
+
+        function createCredDetailJSON(){
+            var cDetailBodyEle = $('#cDetailBody');
+            var DataWrapperLocal = {};
+            var CategoryLocal ={};
+                
+            DataWrapperLocal.Id = cDetailBodyEle.find('#Id').val();
+
+                CategoryLocal.recId = cDetailBodyEle.find('#Category :selected').val();
+                CategoryLocal.Text = cDetailBodyEle.find('#Category :selected').text();
+                  DataWrapperLocal.Category = CategoryLocal;
+            
+            DataWrapperLocal.Title = cDetailBodyEle.find('#Title').val(); 
+            DataWrapperLocal.Redirect_URL = cDetailBodyEle.find('#Redirect_URL').val();
+            DataWrapperLocal.Username = cDetailBodyEle.find('#Username').val();
+            DataWrapperLocal.Password = cDetailBodyEle.find('#Password').val();
+            DataWrapperLocal.Email = cDetailBodyEle.find('#Email').val();
+            DataWrapperLocal.Mobile = cDetailBodyEle.find('#Mobile').val();
+            DataWrapperLocal.Security_question = cDetailBodyEle.find('#Security_question').val();
+            DataWrapperLocal.Security_answer = cDetailBodyEle.find('#Security_answer').val();
+            DataWrapperLocal.Comments = cDetailBodyEle.find('#Comments').val();
+
+            DataWrapperLocal = JSON.stringify(DataWrapperLocal);
+            
+            return DataWrapperLocal;    
+                            
+        }
+        function upsertDeleteRecord(Opertion){
+            blockUI();
+            var CredentialDetail = {};
+            CredentialDetail = createCredDetailJSON();
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.Cred_MainController.UpsertCredentialDetail}',CredentialDetail,Opertion,function(result, event){
+                        if(event.status){
+                            if(result.statusCode == 200){
+                                if(result.data.Id != ''){
+                                 if(window.credentialData.Credential_DetailList.filter(d => d.Id === result.data.Id).length > 0){
+                                    //Update    
+                                    let index = window.credentialData.Credential_DetailList.findIndex(d => d.Id === result.data.Id);
+                                    window.credentialData.Credential_DetailList[index] = result.data;
+                                    //For delete:::: window.credentialData.Credential_DetailList.slice(index,1)
+                                 }
+                                 else{
+                                     //New 
+                                     window.credentialData.Credential_DetailList.push(result.data);
+                                 }  
+
+                                 //add category
+                                 if(window.credentialData.CategoryList.findIndex(d => d.recId === result.data.Category.recId) == -1){
+                                    window.credentialData.CategoryList.push(result.data.Category);
+                                 }
+                                }
+                                renderTable(window.credentialData);
+                                toastr["success"](result.message, "Success"); 
+                            }else if(result.statusCode == 410){
+                                if(result.data.Id != ''){
+                                    window.credentialData.Credential_DetailList = window.credentialData.Credential_DetailList.filter(d => d.Id != result.data.Id);
+                                }    
+                                renderTable(window.credentialData);
+                                toastr["success"](result.message, "Success"); 
+                            }else{
+                                toastr["error"](result.message, "Exception");
+                            }    
+                            $("#addEditModal").modal("hide");    
+                        }else if (event.type === 'exception') {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");    
+                        }else {
+                            console.log(event);
+                            toastr["error"](result.message, "Exception");
+                        }
+                        blockUI();
+                },{escape: false}
+            );
+            
+            
+        }
+    
+        function redirectHome(){
+            window.open(window.location.origin, "_self");
+        }
+        $(document).ready( function () {
+            getdata();
+            //$('[data-toggle="tooltip"]').tooltip();
+           
+            toastr.options = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-center",
+                "preventDuplicates": true,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+                }
+        });
+    
+    </script>
+</apex:component>

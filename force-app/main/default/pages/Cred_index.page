@@ -1,0 +1,180 @@
+<apex:page showHeader="false" controller="Cred_MainController" standardStylesheets="false" sidebar="false" docType="html-5.0" applyBodyTag="False" applyHtmlTag="False" >
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        
+        <head>
+          <title>my-Credential</title>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <apex:stylesheet value="{!URLFOR($Resource.myappLibrary, 'css/bootstrap.min.css')}"/>
+            <apex:stylesheet value="{!URLFOR($Resource.myappLibrary, 'css/dataTables.bootstrap.min.css')}"/>
+            <apex:stylesheet value="{!URLFOR($Resource.myappLibrary, 'css/toastr.min.css')}"/>
+             
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/jquery.min.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/bootstrap.min.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/jquery.dataTables.min.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/dataTables.bootstrap.min.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/mustache.min.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/validator.js')}" />
+            <apex:includeScript value="{!URLFOR($Resource.myappLibrary, 'js/toastr.min.js')}" />
+
+        </head>
+        <c:Cred_CssComponent />
+        <c:Cred_JSComponent />
+        <body>
+        <div class="overlay hide">
+            <div class="spinner">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
+       </div>
+        <c:Cred_template ></c:Cred_template>
+        
+          <nav class="navbar navbar-default" style="border-radius: 0px;"> <!-- navbar-inverse-->
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>                        
+                </button>
+                <a class="navbar-brand" href="#"><i class="glyphicon glyphicon-cloud" style="color: #71a3ce;"></i>  
+                    Safe<b style="color: #71a3ce;">@myCloud</b></a>
+              </div>
+              <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li><a href="#" onclick="openModel('Add','')"><i class="glyphicon glyphicon-plus"></i> Add Credential</a></li>
+                    <li><a href="#" data-toggle="modal" data-target="#generatePassModal"><i class="glyphicon glyphicon-random"></i> Generate Password</a></li>
+                    <li><a href="#" onclick="getdata()"><i class="glyphicon glyphicon-refresh gly-spin"></i> Refresh</a></li>
+                    <li><a href="#" data-toggle="modal" data-target="#HelpModal"><i class="glyphicon glyphicon-envelope"></i> Help</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="javascript:redirectHome()"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+
+        <div class="container" style="width: 100%;">
+            <div class="panel panel-default">
+                <div class="panel-body" id="cred-data-table">
+                
+                </div>
+            </div>
+           
+        </div>
+        <div class="modal fade" id="addEditModal">
+        </div>    
+            
+            
+        <!-- Generate Password -->
+        
+        <div class="modal fade parent" id="generatePassModal">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                
+                <!-- Modal Header -->
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Password Generator</h4>
+                    <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                </div>
+                
+                <!-- Modal body -->
+                <div class="modal-body gpass-parent">
+                        
+                    <div class="row">
+                        <div class="col-sm-1 col-md-2 col-lg-2"></div>
+                        <div class="col-sm-12 col-md-8 col-lg-8">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="col-sm-6 col-md-6 col-lg-6"><span>Password Length</span></div>
+                                            <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input type="number" class="form-control input-sm" id="length" min='4' max='20' value='8' /></div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="col-sm-6 col-md-6 col-lg-6"><span>Uppercase letters</span></div>
+                                            <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="uppercase" type="checkbox" value=""/></div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="col-sm-6 col-md-6 col-lg-6"><span>Lowercase letters</span></div>
+                                            <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="lowercase" type="checkbox" value=""/></div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="col-sm-6 col-md-6 col-lg-6"><span>Include Numbers</span></div>
+                                            <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="numbers" type="checkbox" value=""/></div>
+                                        </div>
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="col-sm-6 col-md-6 col-lg-6"><span>Include Symbols</span></div>
+                                            <div class="col-sm-6 col-md-6 col-lg-6 text-center"><input id="symbols" type="checkbox" value=""/></div>
+                                        </div>
+
+                                        <div class="col-sm-12 col-md-12 col-lg-12">
+                                            <div class="input-group">
+                                                <input id="result" type="text" class="form-control pass-result input-sm" placeholder="Result" value="" disabled="disabled"/>
+                                                <div class="input-group-btn">
+                                                <button type="button" id="clipboard" onclick="copyToclipboard(this);" class="btn btn-success btn-sm">Copy</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>    
+                                <div class="col-sm-12 col-md-12 col-lg-12 text-center">
+                                    <button type="button" class="btn btn-success" id="generate" onclick="generatePasswordClick(this)">Generate</button>
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+
+                        </div>
+                        <div class="col-sm-1 col-md-2 col-lg-2 text-center"></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Help Modal-->
+
+            <div class="modal fade parent" id="HelpModal">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content">
+                    
+                        <!-- Modal Header -->
+                        <div class="modal-header text-center">
+                            <h4 class="modal-title">Help Links</h4>
+                            <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                        </div>
+                    
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                                
+                            <div class="row">
+                                <div class="col-sm-12 col-md-12 col-lg-12">
+                                    <a href="https://trailhead.salesforce.com/en/content/learn/modules/identity_login/identity_login_2fa" target="_blank">
+                                        Enable: Secure Your Users' Identity</a>  <br/>  
+                                    <a href="https://mustache.github.io/mustache.5.html" target="_blank">
+                                        Mustache Logic-less template</a>   <br/> 
+                                    <a href="https://github.com/1000hz/bootstrap-validator" target="_blank">
+                                        Bootstrap Validator</a>   <br/>    
+                                    <a href="https://codeseven.github.io/toastr/demo.html" target="_blank">
+                                        toastr Css</a>   <br/>  
+                                    <a href="https://datatables.net/examples/styling/bootstrap" target="_blank">
+                                        Bootstrap3 DataTable</a>   <br/> 
+                                       
+                                        
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="modal-footer text-center">
+                            <a class="pull-left" href="http://dev-viresh.strikingly.com" target="_blank"><h5><i class="glyphicon glyphicon-user"></i>Visit Profile</h5></a>    
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" >Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </body>    
+    
+    </html>
+</apex:page>

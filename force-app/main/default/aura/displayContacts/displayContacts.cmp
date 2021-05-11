@@ -1,0 +1,11 @@
+<aura:component >
+    <aura:attribute name="accId" type='String'/>
+    <aura:attribute name='lstContacts' type='Contact[]'/>
+    <lightning:card title='contactList'>
+        
+        <lightning:input type='{!v.accId}' name='accountId'/>
+        <lightning:Button name='getContact' onClick='{!c.getContacts}'/>
+        
+        
+    </lightning:card>    
+</aura:component>
